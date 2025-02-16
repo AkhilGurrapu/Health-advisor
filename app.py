@@ -27,54 +27,28 @@ def get_response():
     
     try:
         if conversation_state['stage'] == 'initial':
-            # Check if it's a symptom we recognize
             symptom_response = analyze_symptoms(user_message.lower())
             if symptom_response['type'] == 'symptom':
+                # Get the appropriate follow-up question based on the symptom
+                follow_up_question = get_follow_up_question(symptom_response['name'])
+                
                 session['conversation_state'] = {
-                    'stage': 'asking_food',
+                    'stage': 'asking_details',
                     'symptom': symptom_response['name']
                 }
                 return jsonify({
                     'response': {
                         'type': 'question',
-                        'message': f"I understand you're experiencing {symptom_response['name']}. What did you eat in the last 24 hours?"
+                        'message': f"I understand you're experiencing {symptom_response['name']}. {follow_up_question}"
                     }
                 })
         
-        elif conversation_state['stage'] == 'asking_food':
-            # Process food information and provide detailed response
+        elif conversation_state['stage'] == 'asking_details':
+            # Process symptom details and provide response
             symptom = conversation_state['symptom']
-            food_info = user_message
+            details = user_message
             
-            prompt = f"""As a health advisor, provide a detailed, structured response for someone experiencing {symptom} 
-            who ate {food_info} in the last 24 hours. Format the response in these specific sections:
-
-            1. ANALYSIS OF CAUSE:
-            - Analyze if any foods mentioned could trigger the symptom
-            - Explain acid/base reactions if relevant
-            - Other potential triggers
-
-            2. IMMEDIATE RELIEF:
-            - Recommended over-the-counter medications with dosage
-            - Quick natural remedies
-            - What to avoid right now
-
-            3. NATURAL SOLUTIONS:
-            - Detailed home remedies
-            - Herbal treatments
-            - Dietary recommendations
-
-            4. LIFESTYLE CHANGES:
-            - Daily habits to develop
-            - Foods to avoid
-            - Preventive measures
-
-            5. WHEN TO SEE A DOCTOR:
-            - Warning signs
-            - Emergency symptoms
-
-            Keep each section concise but informative. Include specific recommendations."""
-            
+            prompt = get_symptom_specific_prompt(symptom, details)
             response = model.generate_content(prompt)
             
             # Clear the conversation state
@@ -90,10 +64,7 @@ def get_response():
         # Default to Gemini response for unhandled cases
         gemini_response = get_gemini_response(user_message)
         return jsonify({
-            'response': {
-                'type': 'general',
-                'message': gemini_response
-            }
+            'response': gemini_response  # Now returns {type: 'detailed_advice', message: ...}
         })
         
     except Exception as e:
@@ -105,20 +76,102 @@ def get_response():
         })
 
 def get_gemini_response(message):
-    prompt = f"""As an AI Health Advisor, provide a structured response to this health concern: {message}
-    
-    Format your response with these sections:
-    1. ANALYSIS
-    2. IMMEDIATE RELIEF
-    3. NATURAL SOLUTIONS
-    4. LIFESTYLE CHANGES
-    5. WHEN TO SEE A DOCTOR
-    
-    Keep each section concise but informative. Include specific recommendations.
-    If this is a medical emergency, emphasize seeking immediate medical attention."""
+    prompt = f"""As an AI Health Advisor, provide a detailed, structured response for someone experiencing {message}. 
+    Format your response exactly as follows:
+
+    **1. ANALYSIS**
+
+    **Main Causes:**
+    • List main causes here
+    • Each on a new line
+
+    **Contributing Factors:**
+    • List factors here
+    • Each on a new line
+
+    **Type of Condition:**
+    • Acute vs Chronic
+    • Severity levels
+
+    **2. IMMEDIATE RELIEF**
+
+    **Medications:**
+    • Over-the-counter options:
+        - Names and dosages
+        - When to take
+        - Precautions
+    • Prescription medications (if applicable):
+        - Names and dosages
+        - When to take
+        - Precautions
+
+    **Quick Remedies:**
+    • At-home treatments:
+        - List treatments
+        - With instructions
+    • Immediate actions:
+        - What to do now
+        - What to avoid
+
+    **3. NATURAL SOLUTIONS**
+
+    **Herbal Remedies:**
+    • Option 1:
+        - Preparation method
+        - Dosage guideline
+    • Option 2:
+        - Preparation method
+        - Dosage guideline
+
+    **Alternative Therapies:**
+    • List therapies
+    • With application methods
+
+    **4. LIFESTYLE CHANGES**
+
+    **Daily Habits:**
+    • What to do:
+        - List good habits
+        - With explanations
+    • What to avoid:
+        - List things to avoid
+        - With reasons
+
+    **Prevention Tips:**
+    • Short-term:
+        - Immediate actions
+        - Quick fixes
+    • Long-term:
+        - Lifestyle changes
+        - Ongoing practices
+
+    **5. WHEN TO SEE A DOCTOR**
+
+    **Warning Signs:**
+    • Emergency symptoms:
+        - List urgent symptoms
+        - That need immediate care
+    • Serious indicators:
+        - List concerning symptoms
+        - That need medical attention
+
+    **Risk Factors:**
+    • High-risk groups:
+        - List vulnerable populations
+    • Complications:
+        - Potential complications
+        - Long-term effects
+
+    Keep each section detailed but concise. Use bullet points consistently.
+    If this is a medical emergency, emphasize seeking immediate medical attention first."""
     
     response = model.generate_content(prompt)
-    return response.text
+    
+    # Return in the same format as symptom responses
+    return {
+        'type': 'detailed_advice',
+        'message': response.text
+    }
 
 def analyze_symptoms(message):
     for symptom in health_data['symptoms']:
