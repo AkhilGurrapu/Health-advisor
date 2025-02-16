@@ -2,6 +2,7 @@
 
 A Flask-based web application that provides personalized health advice using Google's Gemini AI, with conversation state management and structured symptom analysis.
 
+![image](img.png)
 ## Features
 - Symptom analysis with follow-up questions
 - Food intake tracking for better diagnosis
@@ -42,7 +43,7 @@ your-project/
 ### Installation Steps
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/ai-health-advisor.git
+   git clone https://github.com/AkhilGurrapu/Health-advisor.git
    cd ai-health-advisor
    ```
 
@@ -74,7 +75,6 @@ your-project/
    - Open the `.env` file in a text editor and add the following lines:
    ```ini
    GOOGLE_API_KEY=your_actual_gemini_api_key_here  # Replace with your API key
-   FLASK_SECRET_KEY=your_secret_key_here  # You can generate a random key
    ```
 
 ### Running the Application
@@ -82,7 +82,11 @@ your-project/
    ```bash
    flask run --port 5000 --debug
    ```
-2. **Access the application**: Open your web browser and go to `http://localhost:5000`.
+   or 
+   ```bash
+   python app.py
+   ```
+2. **Access the application**: Open your web browser and go to `http://127.0.0.1:5000`.
 
 ## Key Code Components
 
