@@ -189,5 +189,135 @@ def analyze_symptoms(message):
         'message': "Let me help you with your health concern."
     }
 
+def get_follow_up_question(symptom):
+    """Generate appropriate follow-up questions based on the symptom."""
+    
+    symptom_questions = {
+        'headache': """To help better, please tell me:
+            - How long have you had it?
+            - Is it on one side or both sides?
+            - Have you experienced any triggers (stress, lack of sleep, bright lights)?""",
+            
+        'stomach pain': """To help better, please tell me:
+            - Where exactly is the pain located?
+            - How long have you had it?
+            - Have you noticed any connection with food or meals?""",
+            
+        'fever': """To help better, please tell me:
+            - What's your temperature reading?
+            - How long have you had the fever?
+            - Are you experiencing any other symptoms?""",
+            
+        'cough': """To help better, please tell me:
+            - Is it a dry cough or producing mucus?
+            - How long have you had it?
+            - Does anything make it better or worse?"""
+    }
+    
+    # Default question if symptom not in dictionary
+    default_question = """Please tell me:
+        - How long have you had this symptom?
+        - Is it constant or does it come and go?
+        - Have you noticed any triggers or patterns?"""
+    
+    return symptom_questions.get(symptom, default_question)
+
+def get_symptom_specific_prompt(symptom, details):
+    """Generate a specific prompt based on the symptom and user details."""
+    
+    base_prompt = f"""As an AI Health Advisor, provide a detailed, structured response for someone experiencing {symptom} 
+    with these specific details: {details}
+    
+    Format your response exactly as follows:
+
+    **1. ANALYSIS**
+
+    **Main Causes:**
+    • List main causes here based on the specific details provided
+    • Each on a new line
+
+    **Contributing Factors:**
+    • List factors here
+    • Each on a new line
+
+    **Type of Condition:**
+    • Acute vs Chronic
+    • Severity levels based on provided details
+
+    **2. IMMEDIATE RELIEF**
+
+    **Medications:**
+    • Over-the-counter options:
+        - Names and dosages
+        - When to take
+        - Precautions
+    • Prescription medications (if applicable):
+        - Names and dosages
+        - When to take
+        - Precautions
+
+    **Quick Remedies:**
+    • At-home treatments:
+        - List treatments specific to the described symptoms
+        - With instructions
+    • Immediate actions:
+        - What to do now
+        - What to avoid
+
+    **3. NATURAL SOLUTIONS**
+
+    **Herbal Remedies:**
+    • Option 1:
+        - Preparation method
+        - Dosage guideline
+    • Option 2:
+        - Preparation method
+        - Dosage guideline
+
+    **Alternative Therapies:**
+    • List therapies
+    • With application methods
+
+    **4. LIFESTYLE CHANGES**
+
+    **Daily Habits:**
+    • What to do:
+        - List good habits
+        - With explanations
+    • What to avoid:
+        - List things to avoid
+        - With reasons
+
+    **Prevention Tips:**
+    • Short-term:
+        - Immediate actions
+        - Quick fixes
+    • Long-term:
+        - Lifestyle changes
+        - Ongoing practices
+
+    **5. WHEN TO SEE A DOCTOR**
+
+    **Warning Signs:**
+    • Emergency symptoms:
+        - List urgent symptoms
+        - That need immediate care
+    • Serious indicators:
+        - List concerning symptoms
+        - That need medical attention
+
+    **Risk Factors:**
+    • High-risk groups:
+        - List vulnerable populations
+    • Complications:
+        - Potential complications
+        - Long-term effects
+
+    Keep each section detailed but concise. Use bullet points consistently.
+    If this is a medical emergency, emphasize seeking immediate medical attention first.
+    Base your response specifically on the provided symptom details."""
+
+    return base_prompt
+
 if __name__ == '__main__':
     app.run(debug=True)
