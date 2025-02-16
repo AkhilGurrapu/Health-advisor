@@ -1,0 +1,65 @@
+{
+    "symptoms": [
+        {
+            "name": "stomach ache",
+            "causes": [
+                "acidic foods",
+                "spicy foods",
+                "irregular eating patterns",
+                "food allergies",
+                "gastritis",
+                "indigestion"
+            ],
+            "remedies": [
+                "antacids (e.g., Tums, Pepto-Bismol)",
+                "ginger tea",
+                "chamomile tea",
+                "apple cider vinegar with water",
+                "probiotics"
+            ],
+            "prevention": [
+                "regular meal times",
+                "avoiding trigger foods",
+                "proper chewing",
+                "staying hydrated",
+                "stress management"
+            ],
+            "medications": [
+                {
+                    "name": "Omeprazole",
+                    "dosage": "20mg once daily",
+                    "notes": "Take before meals"
+                },
+                {
+                    "name": "Ranitidine",
+                    "dosage": "150mg twice daily",
+                    "notes": "Take with or without food"
+                }
+            ],
+            "natural_remedies": [
+                {
+                    "name": "Ginger Tea",
+                    "preparation": "Steep fresh ginger in hot water for 10 minutes",
+                    "frequency": "2-3 times daily"
+                },
+                {
+                    "name": "Peppermint Oil",
+                    "usage": "1-2 drops in warm water",
+                    "frequency": "After meals"
+                }
+            ]
+        },
+        {
+            "name": "headache",
+            "causes": ["stress", "dehydration", "lack of sleep", "eye strain"],
+            "remedies": ["rest", "hydration", "pain relievers", "reduce screen time"],
+            "prevention": ["regular sleep schedule", "stay hydrated", "manage stress", "proper posture"]
+        },
+        {
+            "name": "fever",
+            "causes": ["infection", "inflammation", "heat exhaustion"],
+            "remedies": ["rest", "fluids", "fever reducers", "cool compress"],
+            "prevention": ["good hygiene", "proper rest", "balanced diet", "avoid sick contacts"]
+        }
+    ]
+}

@@ -1,0 +1,209 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Health Advisor</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .chat-message {
+            padding: 1rem;
+            margin: 0.5rem;
+            border-radius: 0.5rem;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: auto;
+        }
+        .ai-message {
+            background-color: #f5f5f5;
+            margin-right: auto;
+        }
+        .typing-indicator {
+            display: none;
+            padding: 1rem;
+            margin: 0.5rem;
+        }
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin-right: 3px;
+            background: #90a4ae;
+            border-radius: 50%;
+            animation: typing 1s infinite ease-in-out;
+        }
+        @keyframes typing {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        .advice-section {
+            margin: 15px 0;
+            padding: 10px;
+            border-left: 3px solid #2196F3;
+            background-color: #f8f9fa;
+        }
+        
+        .ai-message strong {
+            color: #1976D2;
+            display: inline-block;
+            margin: 8px 0;
+        }
+        
+        .ai-message br {
+            margin: 5px 0;
+        }
+        
+        .ai-message {
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+        
+        /* Style for bullet points */
+        .ai-message ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .ai-message li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-600">AI Health Advisor</h1>
+            <p class="text-gray-600 mt-2">Ask me anything about your health concerns</p>
+        </header>
+
+        <div id="chat-container" class="bg-white rounded-lg shadow-lg p-6 mb-4 h-[500px] overflow-y-auto">
+            <div class="ai-message chat-message">
+                Hello! I'm your AI Health Advisor. How can I help you today?
+            </div>
+            <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <input type="text" 
+                   id="user-input" 
+                   class="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                   placeholder="Describe your symptoms or ask a health question..."
+                   onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()" 
+                    class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors">
+                Send
+            </button>
+        </div>
+
+        <div class="text-center text-gray-500 text-sm mt-4">
+            Disclaimer: This AI provides general health information and is not a substitute for professional medical advice.
+        </div>
+    </div>
+
+    <script>
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function showTypingIndicator() {
+            const indicator = document.querySelector('.typing-indicator');
+            indicator.style.display = 'block';
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.querySelector('.typing-indicator');
+            indicator.style.display = 'none';
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chat-container');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addMessage(message, isUser = false) {
+            const container = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${isUser ? 'user-message' : 'ai-message'}`;
+            
+            if (isUser) {
+                messageDiv.textContent = message;
+            } else {
+                messageDiv.innerHTML = message; // Use innerHTML for formatted HTML
+            }
+            
+            container.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function formatResponse(response) {
+            if (response.type === 'symptom') {
+                return `I understand you're experiencing ${response.name}.\n\n` +
+                       `Possible causes: ${response.causes.join(', ')}\n\n` +
+                       `Recommended remedies: ${response.remedies.join(', ')}\n\n` +
+                       `Prevention tips: ${response.prevention.join(', ')}`;
+            }
+            
+            if (response.type === 'detailed_advice') {
+                // Convert markdown-style text to HTML with proper formatting
+                const text = response.message
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
+                    .replace(/\n\s*-\s/g, '<br>• ') // Convert dashes to bullets
+                    .replace(/\n{2,}/g, '<br><br>') // Convert multiple newlines to breaks
+                    .split(/(?=\*\*\d+\.)/) // Split at section numbers
+                    .map(section => `<div class="advice-section">${section}</div>`) // Wrap sections
+                    .join('');
+                    
+                return text;
+            }
+            
+            return response.message;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Display user message
+            addMessage(message, true);
+            input.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                // Send to backend
+                const response = await fetch('/get_response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({message: message})
+                });
+
+                const data = await response.json();
+                
+                // Hide typing indicator and display response
+                hideTypingIndicator();
+                let responseText = formatResponse(data.response);
+                addMessage(responseText);
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('Sorry, I encountered an error. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>
